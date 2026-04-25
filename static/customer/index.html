@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Customer Portal · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <header class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <img src="/assets/img/logo.svg" alt="" />
+      <h1 class="text-base font-semibold flex-1">BDA Logistics IDP</h1>
+      <span id="me" class="text-sm text-slate-500"></span>
+      <button id="logout" class="text-sm text-slate-600 hover:text-slate-900">Sign out</button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6">
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Upload</h2>
+      <div id="uploader" class="bg-white p-4 rounded-lg shadow-sm"></div>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">My API Key</h2>
+      <div id="apikey" class="bg-white p-4 rounded-lg shadow-sm text-sm"></div>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-semibold">Jobs</h2>
+        <form id="filters" class="flex gap-2 text-sm">
+          <select name="status" class="border rounded px-2 py-1">
+            <option value="">All statuses</option>
+            <option value="queued">queued</option>
+            <option value="processing">processing</option>
+            <option value="success">success</option>
+            <option value="failed">failed</option>
+          </select>
+          <select name="doc_type" class="border rounded px-2 py-1">
+            <option value="">All types</option>
+            <option value="bill_of_lading">Bill of Lading</option>
+            <option value="commercial_invoice">Commercial Invoice</option>
+            <option value="packing_list">Packing List</option>
+          </select>
+        </form>
+      </div>
+      <div id="jobsTable" class="bg-white rounded-lg shadow-sm overflow-x-auto"></div>
+      <div id="jobsPaginator"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { ensureAuthed, logout } from "/js/auth.js";
+    import { initUpload } from "/js/upload.js";
+    import { renderJobList } from "/js/job-list.js";
+    import { apiFetch } from "/js/api.js";
+    import { bindFilterForm, readQuery, writeQuery } from "/js/filters.js";
+    import { fmtDate } from "/js/format.js";
+
+    const me = await ensureAuthed("customer");
+    document.getElementById("me").textContent = `Signed in as ${me.username}`;
+    document.getElementById("logout").addEventListener("click", () => logout());
+
+    async function renderApiKey() {
+      const root = document.getElementById("apikey");
+      const ak = await apiFetch("/api/v1/me/api-key");
+      root.innerHTML = ak
+        ? `Key ending in <code class="font-mono">****${ak.last_four}</code> (created ${fmtDate(ak.created_at)})
+           <button id="rotate" class="ml-3 text-blue-600 hover:underline">Rotate</button>`
+        : `<button id="rotate" class="text-blue-600 hover:underline">Generate API key</button>`;
+      root.querySelector("#rotate").addEventListener("click", async () => {
+        const fresh = await apiFetch("/api/v1/me/api-key/rotate", { method: "POST" });
+        prompt("Save this key now — it will not be shown again:", fresh.api_key);
+        renderApiKey();
+      });
+    }
+    renderApiKey();
+
+    initUpload(document.getElementById("uploader"), { onUploaded: () => list.reload() });
+
+    let list;
+    async function refresh() {
+      list = await renderJobList({
+        tableEl: document.getElementById("jobsTable"),
+        paginatorEl: document.getElementById("jobsPaginator"),
+        filters: readQuery(),
+      });
+    }
+    bindFilterForm(document.getElementById("filters"), (data) => { writeQuery(data); refresh(); });
+    refresh();
+  </script>
+</body>
+</html>
