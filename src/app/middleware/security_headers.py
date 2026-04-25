@@ -4,8 +4,8 @@ from starlette.responses import Response
 
 CSP = (
     "default-src 'self'; "
-    "img-src 'self' https://*.s3.*.amazonaws.com data:; "
-    "frame-src https://*.s3.*.amazonaws.com; "
+    "img-src 'self' https://*.s3.*.amazonaws.com https://*.s3.amazonaws.com data:; "
+    "frame-src https://*.s3.*.amazonaws.com https://*.s3.amazonaws.com; "
     "script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net 'unsafe-inline'; "
     "style-src 'self' https://cdn.tailwindcss.com 'unsafe-inline'"
 )
