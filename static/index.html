@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center">
+  <script type="module">
+    const r = await fetch("/api/v1/auth/me", { credentials: "include" });
+    if (!r.ok) {
+      location.replace("/login.html");
+    } else {
+      const me = await r.json();
+      location.replace(me.role === "admin" ? "/admin/index.html" : "/customer/index.html");
+    }
+  </script>
+  <p class="text-slate-500">Loading…</p>
+</body>
+</html>

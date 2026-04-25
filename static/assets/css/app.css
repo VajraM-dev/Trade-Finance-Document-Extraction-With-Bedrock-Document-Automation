@@ -1,0 +1,8 @@
+:root {
+  --brand: #1e293b;
+}
+body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.toast {
+  position: fixed; right: 1rem; bottom: 1rem; z-index: 50;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}

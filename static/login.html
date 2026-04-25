@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sign in · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center">
+  <main class="w-full max-w-sm bg-white p-8 rounded-xl shadow">
+    <div class="flex items-center gap-2 mb-6">
+      <img src="/assets/img/logo.svg" alt="" />
+      <h1 class="text-lg font-semibold">BDA Logistics IDP</h1>
+    </div>
+    <form id="loginForm" class="flex flex-col gap-3">
+      <label class="text-sm">Username
+        <input name="username" required autofocus class="mt-1 w-full border rounded px-3 py-2" />
+      </label>
+      <label class="text-sm">Password
+        <input name="password" type="password" required class="mt-1 w-full border rounded px-3 py-2" />
+      </label>
+      <button class="bg-slate-900 text-white rounded py-2 mt-2">Sign in</button>
+    </form>
+  </main>
+
+  <script type="module">
+    import { apiFetch, setCsrf } from "/js/api.js";
+    const form = document.getElementById("loginForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      const me = await apiFetch("/api/v1/auth/login", { method: "POST", json: data });
+      setCsrf(me.csrf_token);
+      location.replace(me.role === "admin" ? "/admin/index.html" : "/customer/index.html");
+    });
+  </script>
+</body>
+</html>

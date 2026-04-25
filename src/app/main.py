@@ -62,6 +62,12 @@ def create_app() -> FastAPI:
     app.include_router(usage.router, prefix="/api/v1")
     app.include_router(admin.router, prefix="/api/v1")
 
+    from pathlib import Path
+    from fastapi.staticfiles import StaticFiles
+
+    static_dir = Path(__file__).resolve().parents[2] / "static"
+    app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
+
     return app
 
 
