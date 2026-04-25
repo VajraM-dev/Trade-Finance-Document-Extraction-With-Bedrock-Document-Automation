@@ -6,5 +6,27 @@ __pycache__/
 htmlcov/
 *.egg-info/
 .env
+.env.*
+!.env.example
 .mypy_cache/
 .ruff_cache/
+
+# secrets / local artifacts
+cookies.txt
+*.pem
+*.key
+*.log
+
+# private notes (not for public repo)
+IMPLEMENTATION_LOG.md
+DEMO_SCRIPT.md
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# playwright
+test-results/
+playwright-report/

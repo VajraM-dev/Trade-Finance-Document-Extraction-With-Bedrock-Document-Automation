@@ -23,6 +23,7 @@ from app.services import audit
 from app.services.presign import presigned_get_url, upload_stream
 from app.services.uploads import detect_mime, validate_size
 from app.settings import Settings, get_settings
+from app.worker.celery_app import celery_app
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -86,6 +87,9 @@ async def create_jobs(
             s3_input_uri=f"s3://{settings.s3_input_bucket}/{key}",
             s3_output_prefix=f"s3://{settings.s3_output_bucket}/{job_id}/",
         )
+        await db.commit()  # ensure row visible to worker before dispatch
+
+        celery_app.send_task("process_document", args=[str(job_id)], queue="default")
 
         created.append(
             JobCreatedItem(job_id=job_id, status_url=f"/api/v1/jobs/{job_id}")
