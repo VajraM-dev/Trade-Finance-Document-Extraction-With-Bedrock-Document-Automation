@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Users · Admin · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <header class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <h1 class="text-base font-semibold flex-1">Admin · Users</h1>
+      <nav class="text-sm flex gap-4">
+        <a href="/admin/index.html">Dashboard</a>
+        <a href="/admin/users.html" class="font-medium">Users</a>
+        <a href="/admin/jobs.html">Jobs</a>
+        <a href="/admin/audit.html">Audit</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 grid gap-4">
+    <section class="bg-white p-4 rounded-lg shadow-sm">
+      <h2 class="text-sm font-semibold mb-3">Create user</h2>
+      <form id="createForm" class="grid grid-cols-1 md:grid-cols-5 gap-2 text-sm">
+        <input name="username" placeholder="username" required class="border rounded px-2 py-1" />
+        <input name="email" type="email" placeholder="email" required class="border rounded px-2 py-1" />
+        <input name="password" type="password" placeholder="password" required minlength="10" class="border rounded px-2 py-1" />
+        <select name="role" class="border rounded px-2 py-1">
+          <option value="customer">customer</option>
+          <option value="admin">admin</option>
+        </select>
+        <button class="bg-slate-900 text-white rounded px-3 py-1">Create</button>
+      </form>
+    </section>
+
+    <section class="bg-white rounded-lg shadow-sm overflow-x-auto">
+      <form id="filters" class="p-3 border-b flex gap-2 text-sm">
+        <input name="q" placeholder="search username…" class="border rounded px-2 py-1" />
+        <select name="role" class="border rounded px-2 py-1">
+          <option value="">Any role</option>
+          <option value="customer">customer</option>
+          <option value="admin">admin</option>
+        </select>
+        <select name="status" class="border rounded px-2 py-1">
+          <option value="">Any status</option>
+          <option value="active">active</option>
+          <option value="suspended">suspended</option>
+        </select>
+      </form>
+      <div id="usersTable"></div>
+    </section>
+    <div id="usersPaginator"></div>
+  </main>
+
+  <script type="module">
+    import { ensureAuthed } from "/js/auth.js";
+    import { apiFetch } from "/js/api.js";
+    import { renderUsers } from "/js/users-admin.js";
+    import { bindFilterForm, readQuery, writeQuery } from "/js/filters.js";
+
+    await ensureAuthed("admin");
+
+    let view;
+    async function refresh() {
+      view = await renderUsers({
+        tableEl: document.getElementById("usersTable"),
+        paginatorEl: document.getElementById("usersPaginator"),
+        filters: readQuery(),
+      });
+    }
+    bindFilterForm(document.getElementById("filters"), (data) => { writeQuery(data); refresh(); });
+    refresh();
+
+    document.getElementById("createForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      await apiFetch("/api/v1/admin/users", { method: "POST", json: data });
+      e.target.reset();
+      view.reload();
+    });
+  </script>
+</body>
+</html>
