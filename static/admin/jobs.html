@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Jobs · Admin · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <header class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <h1 class="text-base font-semibold flex-1">Admin · Jobs</h1>
+      <nav class="text-sm flex gap-4">
+        <a href="/admin/index.html">Dashboard</a>
+        <a href="/admin/users.html">Users</a>
+        <a href="/admin/jobs.html" class="font-medium">Jobs</a>
+        <a href="/admin/audit.html">Audit</a>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto px-4 py-6 grid gap-4">
+    <form id="filters" class="bg-white p-3 rounded-lg shadow-sm flex flex-wrap gap-2 text-sm">
+      <input name="user_id" placeholder="user_id (uuid)" class="border rounded px-2 py-1 w-72" />
+      <select name="status" class="border rounded px-2 py-1">
+        <option value="">Any status</option>
+        <option value="queued">queued</option>
+        <option value="processing">processing</option>
+        <option value="success">success</option>
+        <option value="failed">failed</option>
+      </select>
+      <select name="doc_type" class="border rounded px-2 py-1">
+        <option value="">Any type</option>
+        <option value="bill_of_lading">Bill of Lading</option>
+        <option value="commercial_invoice">Commercial Invoice</option>
+        <option value="packing_list">Packing List</option>
+      </select>
+      <input name="date_from" type="datetime-local" class="border rounded px-2 py-1" />
+      <input name="date_to" type="datetime-local" class="border rounded px-2 py-1" />
+    </form>
+    <div id="jobsTable" class="bg-white rounded-lg shadow-sm overflow-x-auto"></div>
+    <div id="jobsPaginator"></div>
+  </main>
+
+  <script type="module">
+    import { ensureAuthed } from "/js/auth.js";
+    import { renderJobList } from "/js/job-list.js";
+    import { bindFilterForm, readQuery, writeQuery } from "/js/filters.js";
+
+    await ensureAuthed("admin");
+
+    async function refresh() {
+      await renderJobList({
+        tableEl: document.getElementById("jobsTable"),
+        paginatorEl: document.getElementById("jobsPaginator"),
+        baseUrl: "/api/v1/admin/jobs",
+        filters: readQuery(),
+        detailUrl: (id) => `/admin/job.html?id=${id}`,
+      });
+    }
+    bindFilterForm(document.getElementById("filters"), (data) => { writeQuery(data); refresh(); });
+    refresh();
+  </script>
+</body>
+</html>

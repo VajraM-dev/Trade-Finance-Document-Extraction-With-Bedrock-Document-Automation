@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Job · Admin · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <header class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+      <a href="/admin/jobs.html" class="text-sm text-slate-600">&larr; Jobs</a>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 grid gap-4">
+    <div id="header" class="bg-white p-3 rounded-lg shadow-sm"></div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div id="pdf" class="bg-white p-3 rounded-lg shadow-sm"></div>
+      <div id="fields" class="bg-white p-3 rounded-lg shadow-sm"></div>
+    </div>
+    <details class="bg-white p-3 rounded-lg shadow-sm">
+      <summary class="cursor-pointer text-sm font-medium">Raw JSON</summary>
+      <div id="raw" class="mt-2"></div>
+    </details>
+  </main>
+
+  <script type="module">
+    import { ensureAuthed } from "/js/auth.js";
+    import { renderJobDetail } from "/js/job-detail.js";
+
+    await ensureAuthed("admin");
+    const id = new URLSearchParams(location.search).get("id");
+    renderJobDetail({
+      headerEl: document.getElementById("header"),
+      pdfEl: document.getElementById("pdf"),
+      fieldsEl: document.getElementById("fields"),
+      rawEl: document.getElementById("raw"),
+      jobId: id,
+    });
+  </script>
+</body>
+</html>
