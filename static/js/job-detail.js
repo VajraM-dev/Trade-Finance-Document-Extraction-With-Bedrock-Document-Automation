@@ -50,7 +50,7 @@ function renderFields(fields, confidences) {
   const rows = [];
   for (const [k, v] of Object.entries(fields)) {
     if (Array.isArray(v) && v.length && typeof v[0] === "object") {
-      rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k} (${v.length})</summary>${renderListTable(v, confidences[k])}</details>`);
+      rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k} (${v.length})</summary><div class="overflow-x-auto">${renderListTable(v, confidences[k])}</div></details>`);
     } else if (v !== null && typeof v === "object" && !Array.isArray(v)) {
       rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k}</summary><div class="p-2">${renderObject(v, confidences[k])}</div></details>`);
     } else {
