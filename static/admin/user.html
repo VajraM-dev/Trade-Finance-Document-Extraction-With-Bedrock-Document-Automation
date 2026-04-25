@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>User · Admin · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <header class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <a href="/admin/users.html" class="text-sm text-slate-600">&larr; Users</a>
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto px-4 py-6 grid gap-4">
+    <section id="header" class="bg-white p-4 rounded-lg shadow-sm"></section>
+    <section>
+      <h2 class="text-sm font-semibold mb-2">Recent jobs</h2>
+      <div id="jobsTable" class="bg-white rounded-lg shadow-sm overflow-x-auto"></div>
+      <div id="jobsPaginator"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { ensureAuthed } from "/js/auth.js";
+    import { apiFetch } from "/js/api.js";
+    import { renderJobList } from "/js/job-list.js";
+    import { fmtDate } from "/js/format.js";
+
+    await ensureAuthed("admin");
+    const id = new URLSearchParams(location.search).get("id");
+    const u = await apiFetch(`/api/v1/admin/users/${id}`);
+    document.getElementById("header").innerHTML = `
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <h1 class="text-lg font-semibold">${u.username}</h1>
+          <p class="text-sm text-slate-500">${u.email} · role=${u.role} · status=${u.status} · created ${fmtDate(u.created_at)}</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="resetPw" class="px-3 py-1 border rounded text-sm">Reset password</button>
+          <button id="rotate" class="px-3 py-1 border rounded text-sm">Rotate API key</button>
+        </div>
+      </div>`;
+
+    document.getElementById("rotate").addEventListener("click", async () => {
+      const fresh = await apiFetch(`/api/v1/admin/users/${id}/api-key/rotate`, { method: "POST" });
+      prompt("New key (shown once):", fresh.api_key);
+    });
+    document.getElementById("resetPw").addEventListener("click", async () => {
+      const pw = prompt("New password (min 10 chars):");
+      if (!pw) return;
+      await apiFetch(`/api/v1/admin/users/${id}/password`, { method: "POST", json: { old_password: "x", new_password: pw } });
+    });
+
+    renderJobList({
+      tableEl: document.getElementById("jobsTable"),
+      paginatorEl: document.getElementById("jobsPaginator"),
+      baseUrl: "/api/v1/admin/jobs",
+      filters: { user_id: id },
+      detailUrl: (jobId) => `/admin/job.html?id=${jobId}`,
+    });
+  </script>
+</body>
+</html>
