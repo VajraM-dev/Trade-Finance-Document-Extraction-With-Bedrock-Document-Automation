@@ -50,11 +50,11 @@ function renderFields(fields, confidences) {
   const rows = [];
   for (const [k, v] of Object.entries(fields)) {
     if (Array.isArray(v) && v.length && typeof v[0] === "object") {
-      rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k} (${v.length})</summary>${renderListTable(v)}</details>`);
+      rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k} (${v.length})</summary>${renderListTable(v, confidences[k])}</details>`);
     } else if (v !== null && typeof v === "object" && !Array.isArray(v)) {
       rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k}</summary><div class="p-2">${renderObject(v, confidences[k])}</div></details>`);
     } else {
-      const c = confidences[k] !== undefined ? `<span class="text-xs text-slate-500 ml-2">${fmtPercent(confidences[k])}</span>` : "";
+      const c = typeof confidences[k] === "number" ? `<span class="text-xs text-slate-500 ml-2">${fmtPercent(confidences[k])}</span>` : "";
       const display = Array.isArray(v) ? v.join(", ") : String(v);
       rows.push(`<div class="grid grid-cols-3 gap-2 py-1 text-sm border-b"><div class="text-slate-500">${k}</div><div class="col-span-2 break-all">${escapeHtml(display)}${c}</div></div>`);
     }
@@ -74,16 +74,24 @@ function renderObject(obj, conf) {
     } else {
       display = escapeHtml(String(v));
     }
-    const c = confMap[k] !== undefined ? `<span class="text-xs text-slate-500 ml-2">${fmtPercent(confMap[k])}</span>` : "";
+    const c = typeof confMap[k] === "number" ? `<span class="text-xs text-slate-500 ml-2">${fmtPercent(confMap[k])}</span>` : "";
     rows.push(`<div class="grid grid-cols-3 gap-2 py-1 text-sm border-b"><div class="text-slate-500">${k}</div><div class="col-span-2 break-all">${display}${c}</div></div>`);
   }
   return rows.join("");
 }
 
-function renderListTable(rows) {
+function renderListTable(rows, confArr) {
   const cols = Object.keys(rows[0]);
+  const confs = Array.isArray(confArr) ? confArr : [];
   const head = `<tr class="bg-slate-50">${cols.map(c => `<th class="px-2 py-1 text-left text-xs">${c}</th>`).join("")}</tr>`;
-  const body = rows.map(r => `<tr class="border-t">${cols.map(c => `<td class="px-2 py-1 text-xs">${escapeHtml(String(r[c] ?? ""))}</td>`).join("")}</tr>`).join("");
+  const body = rows.map((r, i) => {
+    const rowConf = confs[i] && typeof confs[i] === "object" ? confs[i] : {};
+    return `<tr class="border-t">${cols.map(c => {
+      const cell = escapeHtml(String(r[c] ?? ""));
+      const cv = typeof rowConf[c] === "number" ? `<div class="text-[10px] text-slate-400">${fmtPercent(rowConf[c])}</div>` : "";
+      return `<td class="px-2 py-1 text-xs align-top">${cell}${cv}</td>`;
+    }).join("")}</tr>`;
+  }).join("");
   return `<table class="w-full">${head}${body}</table>`;
 }
 
