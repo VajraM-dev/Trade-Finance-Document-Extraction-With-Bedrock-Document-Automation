@@ -51,10 +51,31 @@ function renderFields(fields, confidences) {
   for (const [k, v] of Object.entries(fields)) {
     if (Array.isArray(v) && v.length && typeof v[0] === "object") {
       rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k} (${v.length})</summary>${renderListTable(v)}</details>`);
+    } else if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+      rows.push(`<details class="border rounded mt-2"><summary class="cursor-pointer px-2 py-1 bg-slate-100">${k}</summary><div class="p-2">${renderObject(v, confidences[k])}</div></details>`);
     } else {
       const c = confidences[k] !== undefined ? `<span class="text-xs text-slate-500 ml-2">${fmtPercent(confidences[k])}</span>` : "";
-      rows.push(`<div class="grid grid-cols-3 gap-2 py-1 text-sm border-b"><div class="text-slate-500">${k}</div><div class="col-span-2 break-all">${escapeHtml(String(v))}${c}</div></div>`);
+      const display = Array.isArray(v) ? v.join(", ") : String(v);
+      rows.push(`<div class="grid grid-cols-3 gap-2 py-1 text-sm border-b"><div class="text-slate-500">${k}</div><div class="col-span-2 break-all">${escapeHtml(display)}${c}</div></div>`);
     }
+  }
+  return rows.join("");
+}
+
+function renderObject(obj, conf) {
+  const confMap = (conf && typeof conf === "object" && !Array.isArray(conf)) ? conf : {};
+  const rows = [];
+  for (const [k, v] of Object.entries(obj)) {
+    let display;
+    if (v === null || v === undefined) {
+      display = "—";
+    } else if (typeof v === "object") {
+      display = `<pre class="text-xs bg-slate-50 p-1 rounded overflow-auto">${escapeHtml(JSON.stringify(v, null, 2))}</pre>`;
+    } else {
+      display = escapeHtml(String(v));
+    }
+    const c = confMap[k] !== undefined ? `<span class="text-xs text-slate-500 ml-2">${fmtPercent(confMap[k])}</span>` : "";
+    rows.push(`<div class="grid grid-cols-3 gap-2 py-1 text-sm border-b"><div class="text-slate-500">${k}</div><div class="col-span-2 break-all">${display}${c}</div></div>`);
   }
   return rows.join("");
 }
