@@ -22,6 +22,7 @@ dependencies = [
     "anyio>=4.6",
     "httpx>=0.28",
     "python-multipart>=0.0.20",
+    "email-validator>=2.0",
 ]
 
 [dependency-groups]
