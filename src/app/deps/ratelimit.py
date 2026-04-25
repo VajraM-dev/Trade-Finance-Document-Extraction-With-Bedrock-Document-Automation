@@ -5,10 +5,12 @@ from fastapi import Depends, Request
 from limits import parse
 from limits.aio.storage import RedisStorage
 from limits.aio.strategies import MovingWindowRateLimiter
-from redis.asyncio import Redis
 
-from app.deps.redis import get_redis
 from app.errors import RateLimitedError
+from app.settings import Settings, get_settings
+
+# Module-level cache: one limiter per redis URL
+_limiters: dict[str, MovingWindowRateLimiter] = {}
 
 
 def _key_for(request: Request) -> str:
@@ -20,16 +22,18 @@ def _key_for(request: Request) -> str:
     return f"ip:{request.client.host if request.client else 'unknown'}"
 
 
-def _make_limiter(redis: Redis) -> MovingWindowRateLimiter:
-    storage = RedisStorage(uri="redis://placeholder", connection_pool=redis.connection_pool)
-    return MovingWindowRateLimiter(storage)
+def _get_limiter(redis_url: str) -> MovingWindowRateLimiter:
+    if redis_url not in _limiters:
+        storage = RedisStorage(redis_url)
+        _limiters[redis_url] = MovingWindowRateLimiter(storage)
+    return _limiters[redis_url]
 
 
 def rate_limit(spec: str, *, scope: str) -> Callable[..., Coroutine[Any, Any, None]]:
     parsed = parse(spec)
 
-    async def _dep(request: Request, redis: Redis = Depends(get_redis)) -> None:
-        limiter = _make_limiter(redis)
+    async def _dep(request: Request, settings: Settings = Depends(get_settings)) -> None:
+        limiter = _get_limiter(settings.redis_url)
         key = _key_for(request)
         if not await limiter.hit(parsed, scope, key):
             window = await limiter.get_window_stats(parsed, scope, key)

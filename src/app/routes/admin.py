@@ -57,7 +57,9 @@ async def dashboard(
     db: AsyncSession = Depends(get_session),
     _: Principal = Depends(require_admin),
 ) -> DashboardResponse:
-    now = datetime.now(timezone.utc)
+    now_tz = datetime.now(timezone.utc)
+    # DB stores TIMESTAMP WITHOUT TIME ZONE — strip tzinfo for comparisons
+    now = now_tz.replace(tzinfo=None)
     today = now.replace(hour=0, minute=0, second=0, microsecond=0)
     by_doc = await db.execute(
         select(Job.matched_blueprint, func.count())

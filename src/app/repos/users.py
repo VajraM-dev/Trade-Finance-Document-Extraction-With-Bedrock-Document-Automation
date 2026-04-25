@@ -62,7 +62,8 @@ async def list_paged(
 async def soft_delete(session: AsyncSession, user_id: uuid.UUID) -> None:
     user = await session.get(User, user_id)
     if user and user.deleted_at is None:
-        user.deleted_at = datetime.now(timezone.utc)
+        # DB stores TIMESTAMP WITHOUT TIME ZONE — use naive UTC datetime
+        user.deleted_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 async def set_status(session: AsyncSession, user_id: uuid.UUID, status: str) -> None:

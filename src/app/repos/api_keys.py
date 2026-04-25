@@ -44,4 +44,5 @@ async def revoke_all_for_user(session: AsyncSession, user_id: uuid.UUID) -> None
     )
     for ak in res.scalars():
         ak.status = "revoked"
-        ak.revoked_at = datetime.now(timezone.utc)
+        # DB stores TIMESTAMP WITHOUT TIME ZONE — use naive UTC datetime
+        ak.revoked_at = datetime.now(timezone.utc).replace(tzinfo=None)
