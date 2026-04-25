@@ -16,5 +16,6 @@ export async function ensureAuthed(requireRole) {
 
 export async function logout() {
   await apiFetch("/api/v1/auth/logout", { method: "POST" });
+  cached = null;
   location.replace("/login.html");
 }
