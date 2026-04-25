@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin Dashboard · BDA Logistics IDP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="/assets/css/app.css" />
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <header class="bg-white border-b">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <img src="/assets/img/logo.svg" alt="" />
+      <h1 class="text-base font-semibold flex-1">Admin · BDA Logistics IDP</h1>
+      <nav class="text-sm flex gap-4">
+        <a href="/admin/index.html" class="font-medium">Dashboard</a>
+        <a href="/admin/users.html">Users</a>
+        <a href="/admin/jobs.html">Jobs</a>
+        <a href="/admin/audit.html">Audit</a>
+      </nav>
+      <button id="logout" class="text-sm text-slate-600">Sign out</button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 grid gap-6">
+    <section id="stats" class="grid grid-cols-1 md:grid-cols-3 gap-4"></section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white p-4 rounded-lg shadow-sm">
+        <h2 class="text-sm font-semibold mb-2">By document type</h2>
+        <canvas id="byType"></canvas>
+      </div>
+      <div class="bg-white p-4 rounded-lg shadow-sm">
+        <h2 class="text-sm font-semibold mb-2">Recent jobs (per day)</h2>
+        <canvas id="recent"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { ensureAuthed, logout } from "/js/auth.js";
+    import { renderDashboard } from "/js/dashboard.js";
+
+    await ensureAuthed("admin");
+    document.getElementById("logout").addEventListener("click", () => logout());
+
+    renderDashboard({
+      statsEl: document.getElementById("stats"),
+      byTypeChartEl: document.getElementById("byType"),
+      recentChartEl: document.getElementById("recent"),
+    });
+  </script>
+</body>
+</html>
