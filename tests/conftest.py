@@ -49,7 +49,9 @@ async def engine():
         # This avoids asyncpg connection pool cleanup hanging on Windows
         poolclass=NullPool,
     )
+    from sqlalchemy import text
     async with e.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     yield e

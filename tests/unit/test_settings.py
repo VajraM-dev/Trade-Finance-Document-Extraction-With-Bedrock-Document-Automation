@@ -22,6 +22,8 @@ def _required_env() -> dict[str, str]:
 
 
 def test_settings_loads_from_env(monkeypatch):
+    for k in ("RUN_MIGRATIONS_ON_STARTUP", "COOKIE_SECURE", "LOG_LEVEL"):
+        monkeypatch.delenv(k, raising=False)
     for k, v in _required_env().items():
         monkeypatch.setenv(k, v)
     s = Settings()
