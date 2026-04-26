@@ -6,6 +6,14 @@ The platform demonstrates how a single managed service (BDA) replaces the tradit
 
 ---
 
+## Disclaimer
+
+**This project is not about Trade Finance.** The focus is on building production-grade pipelines around **AWS Bedrock Data Automation**. Trade finance documents (Bill of Lading, Commercial Invoice, Packing List) were chosen only because realistic dummy samples are easy to generate and ship publicly — unlike sensitive documents (Aadhaar, PAN, passports, bank statements) which carry PII and regulatory risk in a demo.
+
+The backend is document-agnostic. To repurpose it for any other domain (KYC, healthcare forms, contracts, receipts, custom internal docs), point the worker at **your own BDA project + blueprints** via `BDA_PROJECT_ARN` / `BDA_PROFILE_ARN`. No code changes required for new document types — extracted fields, confidence scores, and cost accounting all flow through generic parsing.
+
+---
+
 ## Stack
 
 | Layer | Tech |
